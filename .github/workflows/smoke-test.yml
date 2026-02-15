@@ -1,0 +1,78 @@
+name: Smoke Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start stack
+        run: docker compose up -d
+
+      - name: Wait for healthy
+        run: |
+          echo "Waiting for services..."
+          for i in $(seq 1 60); do
+            if docker compose ps --format json | python3 -c "
+import sys, json
+services = [json.loads(line) for line in sys.stdin]
+healthy = [s for s in services if s.get('Health') == 'healthy']
+print(f'{len(healthy)} healthy services')
+if len(healthy) >= 3:
+    sys.exit(0)
+sys.exit(1)
+"; then
+              echo "All services healthy"
+              break
+            fi
+            sleep 2
+          done
+
+      - name: Verify warehouse exists
+        run: |
+          curl -sf http://localhost:8181/management/v1/warehouse | python3 -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          assert len(data['warehouses']) == 1, 'Expected 1 warehouse'
+          assert data['warehouses'][0]['name'] == 'warehouse'
+          print('Warehouse OK')
+          "
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Install dependencies
+        run: uv sync
+
+      - name: Test DuckDB + Iceberg round-trip
+        run: |
+          uv run python -c "
+          import duckdb
+          conn = duckdb.connect()
+          conn.execute('INSTALL iceberg')
+          conn.execute('LOAD iceberg')
+          conn.execute(\"CREATE SECRET lk (TYPE ICEBERG, TOKEN 'dummy_token')\")
+          conn.execute(\"\"\"CREATE SECRET s3 (TYPE S3, KEY_ID 'minio-root-user',
+              SECRET 'minio-root-password', ENDPOINT 'localhost:9000',
+              URL_STYLE 'path', USE_SSL false, REGION 'local-01')\"\"\")
+          conn.execute(\"\"\"ATTACH 'warehouse' AS warehouse (TYPE ICEBERG,
+              ENDPOINT 'http://localhost:8181/catalog', SECRET lk,
+              ACCESS_DELEGATION_MODE 'none')\"\"\")
+          conn.execute('CREATE SCHEMA IF NOT EXISTS warehouse.ci_test')
+          conn.execute('DROP TABLE IF EXISTS warehouse.ci_test.smoke')
+          conn.execute('CREATE TABLE warehouse.ci_test.smoke (id INT, val VARCHAR)')
+          conn.execute(\"INSERT INTO warehouse.ci_test.smoke VALUES (1, 'hello'), (2, 'world')\")
+          result = conn.execute('SELECT COUNT(*) FROM warehouse.ci_test.smoke').fetchone()
+          assert result[0] == 2, f'Expected 2 rows, got {result[0]}'
+          print('DuckDB round-trip OK')
+          "
+
+      - name: Tear down
+        if: always()
+        run: docker compose down -v

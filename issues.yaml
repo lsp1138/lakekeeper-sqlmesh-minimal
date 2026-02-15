@@ -82,7 +82,7 @@ issues:
 
   - id: 6
     title: "Multi-step pipeline example"
-    status: pending
+    status: done
     labels: ["sqlmesh", "example"]
     body: |
       Extend SQLMesh project with a realistic bronze/silver/gold pattern:
@@ -96,7 +96,7 @@ issues:
 
   - id: 7
     title: "README and documentation"
-    status: pending
+    status: done
     labels: ["docs"]
     body: |
       Clear README covering:
@@ -109,7 +109,7 @@ issues:
 
   - id: 8
     title: "CI: smoke test"
-    status: pending
+    status: done
     labels: ["ci"]
     body: |
       GitHub Actions workflow:
