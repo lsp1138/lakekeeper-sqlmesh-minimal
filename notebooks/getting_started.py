@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.13.0"
+__generated_with = "0.19.11"
 app = marimo.App(width="medium")
 
 
@@ -124,7 +124,7 @@ def _(mo):
     mo.md(
         f"**Warehouse metadata** from Lakekeeper REST API:\n\n```json\n{json.dumps(warehouses, indent=2)}\n```"
     )
-    return (json, urllib)
+    return json, urllib
 
 
 @app.cell
@@ -148,6 +148,12 @@ def _(json, mo, urllib):
     tables = json.loads(tables_resp.read())
 
     mo.md(f"**Namespaces**: {namespaces}\n\n**Tables in `demo`**: {tables}")
+    return
+
+
+@app.cell
+def _():
+    
     return
 
 

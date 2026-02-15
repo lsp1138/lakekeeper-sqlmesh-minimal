@@ -2,8 +2,8 @@
 
 Minimal local lakehouse stack: **Lakekeeper + MinIO + DuckDB + SQLMesh**.
 
-A Fabric-like experience on a single node with a shared Iceberg catalog.
-No vendor lock-in, no Spark, no Kubernetes, no cloud services.
+A Fabric/Databricks-like experience on a single node with a shared Iceberg catalog.
+No vendor lock-in, no Spark, no Kubernetes, no cloud services - all open source and portable.
 
 ## Architecture
 

@@ -35,7 +35,7 @@ def _(mo):
         f"**Loaded {len(model_names)} models** from `transform/`:\n\n"
         + "\n".join(f"- `{m}`" for m in model_names)
     )
-    return (ctx, transform_dir)
+    return (ctx,)
 
 
 @app.cell
@@ -53,9 +53,9 @@ def _(ctx, mo):
     mo.md(
         f"""## Bronze Layer
 
-Raw seed data — {len(bronze)} rows, no transforms.
+    Raw seed data — {len(bronze)} rows, no transforms.
 
-{mo.as_html(bronze)}"""
+    {mo.as_html(bronze)}"""
     )
     return
 
@@ -67,11 +67,11 @@ def _(ctx, mo):
     mo.md(
         f"""## Silver Layer
 
-Filtered to completed orders, deduplicated, added `total_price`.
+    Filtered to completed orders, deduplicated, added `total_price`.
 
-**{len(silver)} rows**
+    **{len(silver)} rows**
 
-{mo.as_html(silver)}"""
+    {mo.as_html(silver)}"""
     )
     return
 
@@ -85,10 +85,25 @@ def _(ctx, mo):
     mo.md(
         f"""## Gold Layer
 
-Daily revenue aggregates.
+    Daily revenue aggregates.
 
-{mo.as_html(gold)}"""
+    {mo.as_html(gold)}"""
     )
+    return
+
+
+@app.cell
+def _():
+    return
+
+
+@app.cell
+def _():
+    return
+
+
+@app.cell
+def _():
     return
 
 
