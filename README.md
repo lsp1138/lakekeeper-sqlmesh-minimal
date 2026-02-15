@@ -48,9 +48,12 @@ uv run marimo edit notebooks/getting_started.py
 cd transform
 uv run sqlmesh plan --auto-apply
 
-# 5. Explore the bronze/silver/gold pipeline
+# 5. Explore the pipeline results
 cd ..
 uv run marimo edit notebooks/pipeline.py
+
+# Or run SQLMesh from within a notebook (no CLI needed)
+uv run marimo edit notebooks/sqlmesh_pipeline.py
 ```
 
 ## What Happens on `docker compose up`
@@ -75,7 +78,8 @@ After ~15 seconds, the stack is ready. No manual steps.
 ├── pyproject.toml              # Python deps: duckdb, marimo, pandas, sqlmesh
 ├── notebooks/
 │   ├── getting_started.py      # Marimo: DuckDB → Lakekeeper → MinIO basics
-│   └── pipeline.py             # Marimo: bronze/silver/gold walkthrough
+│   ├── pipeline.py             # Marimo: bronze/silver/gold results viewer
+│   └── sqlmesh_pipeline.py     # Marimo: runs SQLMesh plan/apply end-to-end
 └── transform/                  # SQLMesh project
     ├── config.py               # DuckDB + Iceberg catalog config
     ├── models/
