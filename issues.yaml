@@ -1,0 +1,120 @@
+# lakekeeper-sqlmesh-minimal - Issue Tracker
+#
+# Minimal local lakehouse: Lakekeeper (Iceberg REST Catalog) + MinIO + DuckDB + SQLMesh
+# Goal: Fabric-like experience, single node, shared catalog, no vendor lock-in.
+
+issues:
+  # --- Phase 1: Infrastructure ---
+
+  - id: 1
+    title: "Docker Compose: Lakekeeper + MinIO + Postgres"
+    status: done
+    labels: ["infra"]
+    body: |
+      Minimal docker-compose.yml with only what is needed:
+      - Lakekeeper (quay.io/lakekeeper/catalog) on port 8181
+      - Postgres 17 (Lakekeeper metadata backend)
+      - MinIO (S3-compatible storage) on ports 9000/9001
+      - Lakekeeper DB migration init container
+      - Bootstrap init container (POST to /management/v1/bootstrap)
+      - MinIO bucket creation init container
+      - Warehouse creation init container (POST to /management/v1/warehouse)
+      Single bridge network. No Spark, no Trino, no Jupyter.
+
+  - id: 2
+    title: "Warehouse bootstrap automation"
+    status: done
+    labels: ["infra"]
+    body: |
+      Automate the post-startup sequence:
+      1. Wait for Lakekeeper healthy
+      2. Bootstrap Lakekeeper (create initial admin/project)
+      3. Create MinIO bucket (warehouse)
+      4. Create warehouse in Lakekeeper pointing to MinIO bucket
+      Use init containers or a small shell script.
+      Provide create-warehouse.json with MinIO S3 profile.
+
+  # --- Phase 2: DuckDB + Iceberg ---
+
+  - id: 3
+    title: "DuckDB connects to Lakekeeper via Iceberg REST"
+    status: done
+    labels: ["compute", "catalog"]
+    body: |
+      Prove DuckDB can talk to Lakekeeper:
+      - CREATE SECRET with dummy token (unsecured mode)
+      - ATTACH warehouse via Iceberg REST endpoint
+      - CREATE TABLE through the Iceberg catalog
+      - INSERT data
+      - SELECT data back
+      - Verify files land in MinIO
+      Python script or notebook. Uses duckdb + httpfs + iceberg extensions.
+
+  - id: 4
+    title: "Getting-started notebook"
+    status: done
+    labels: ["docs", "notebook"]
+    body: |
+      Marimo or Jupyter notebook demonstrating:
+      - Connect DuckDB to Lakekeeper
+      - Create namespace and table
+      - Write sample data (e.g. NYC taxi subset, or synthetic)
+      - Query via SQL
+      - Show table metadata via Lakekeeper REST API
+      - Show files in MinIO
+      Keep it simple and self-contained.
+
+  # --- Phase 3: SQLMesh ---
+
+  - id: 5
+    title: "SQLMesh project with DuckDB + Iceberg catalog"
+    status: pending
+    labels: ["sqlmesh", "transforms"]
+    body: |
+      Add SQLMesh as the transformation layer:
+      - SQLMesh project config pointing DuckDB at Lakekeeper
+      - Seed or source model (raw data in Iceberg)
+      - One or two SQL models with simple transforms
+      - sqlmesh plan + sqlmesh run
+      - Verify transformed tables appear in Lakekeeper catalog
+      - Verify data files in MinIO
+      This proves the full loop: catalog-managed transforms.
+
+  - id: 6
+    title: "Multi-step pipeline example"
+    status: pending
+    labels: ["sqlmesh", "example"]
+    body: |
+      Extend SQLMesh project with a realistic bronze/silver/gold pattern:
+      - Bronze: raw ingested data (Iceberg table)
+      - Silver: cleaned/deduplicated (SQLMesh incremental model)
+      - Gold: aggregated/business-ready (SQLMesh full model)
+      All managed through Lakekeeper catalog, stored in MinIO.
+      Show lineage via sqlmesh ui if practical.
+
+  # --- Phase 4: Polish ---
+
+  - id: 7
+    title: "README and documentation"
+    status: pending
+    labels: ["docs"]
+    body: |
+      Clear README covering:
+      - What this is and why (minimal local lakehouse)
+      - Architecture diagram (simple box diagram)
+      - Prerequisites (Docker, Python)
+      - Quick start (docker compose up, run notebook)
+      - What each component does
+      - Links to Lakekeeper, DuckDB Iceberg, SQLMesh docs
+
+  - id: 8
+    title: "CI: smoke test"
+    status: pending
+    labels: ["ci"]
+    body: |
+      GitHub Actions workflow:
+      - docker compose up
+      - Wait for healthy
+      - Run a basic Python script that creates a table and queries it
+      - docker compose down
+      Proves the stack works on every push.
