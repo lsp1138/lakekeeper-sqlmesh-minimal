@@ -24,6 +24,37 @@ No vendor lock-in, no Spark, no Kubernetes, no cloud services.
 - Warehouse config points MinIO as S3 backend with path-style access
 - SQLMesh uses DuckDB as its engine, Iceberg catalog for table management
 
+## Known Workarounds
+
+### S3 endpoint: Docker vs host
+
+Lakekeeper's warehouse config stores the S3 endpoint as `http://minio:9000`
+(Docker-internal hostname). Lakekeeper validates this on warehouse creation by
+writing a test file, so it must be reachable from inside Docker.
+
+DuckDB runs on the host and can't resolve `minio:9000`. By default, DuckDB
+uses "vended credentials" from the catalog which include this unreachable
+endpoint. The fix:
+
+1. Create a separate S3 secret in DuckDB pointing to `localhost:9000`
+2. Use `ACCESS_DELEGATION_MODE 'none'` when ATTACHing, which tells DuckDB
+   to use its own S3 secret instead of the catalog's vended credentials
+
+See `notebooks/getting_started.py` and `transform/config.py` for examples.
+
+### DuckDB-Iceberg limitations (affects SQLMesh)
+
+DuckDB's Iceberg extension does not support:
+- `CREATE OR REPLACE TABLE` — use DROP + CREATE instead
+- `CREATE VIEW` — not implemented for Iceberg catalogs
+- `USE <catalog>` — must include schema: `USE warehouse.demo`
+
+SQLMesh relies on all three. The custom `IcebergDuckDBEngineAdapter` in
+`transform/config.py` works around these:
+- `SUPPORTS_REPLACE_TABLE = False` — forces DROP + CREATE path
+- `create_view()` overridden to create a table copy instead
+- `set_current_catalog()` is a no-op (relies on fully qualified names)
+
 ## Development
 
 - Follow issues.yaml as the canonical task list
