@@ -4,4 +4,7 @@ __pycache__/
 transform/.cache/
 transform/state.db
 transform/logs/
+state.db
+state.db.wal
 .cache/
+__marimo__/
