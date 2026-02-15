@@ -68,7 +68,7 @@ issues:
 
   - id: 5
     title: "SQLMesh project with DuckDB + Iceberg catalog"
-    status: pending
+    status: done
     labels: ["sqlmesh", "transforms"]
     body: |
       Add SQLMesh as the transformation layer:

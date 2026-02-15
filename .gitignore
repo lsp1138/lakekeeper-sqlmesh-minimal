@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+transform/.cache/
+transform/state.db
+transform/logs/
+.cache/

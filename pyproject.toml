@@ -6,4 +6,5 @@ dependencies = [
     "duckdb",
     "marimo",
     "pandas",
+    "sqlmesh",
 ]
